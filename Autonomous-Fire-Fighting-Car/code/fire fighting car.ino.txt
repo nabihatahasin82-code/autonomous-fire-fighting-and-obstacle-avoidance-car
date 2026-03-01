@@ -1,0 +1,246 @@
+#include <Servo.h>
+
+// ==== Pin Definitions ====
+#define FLAME_LEFT   A0
+#define FLAME_MID    A1
+#define FLAME_RIGHT  A2
+
+#define TRIG 12
+#define ECHO 13
+
+#define ENA 5
+#define ENB 6
+#define IN1 8
+#define IN2 9
+#define IN3 10
+#define IN4 11
+
+#define SERVO_PIN 3
+#define PUMP_PIN 7
+
+// ==== Objects ====
+Servo servoMotor;
+
+// ==== Variables ====
+long duration;
+int distance;
+
+// ==== Setup ====
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(FLAME_LEFT, INPUT);
+  pinMode(FLAME_MID, INPUT);
+  pinMode(FLAME_RIGHT, INPUT);
+
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+
+  pinMode(ENA, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+  pinMode(PUMP_PIN, OUTPUT);
+
+  servoMotor.attach(SERVO_PIN);
+  servoMotor.write(90); // Center position
+
+  stopCar();
+  digitalWrite(PUMP_PIN, LOW);
+
+  Serial.println(" Fire Fighting Car Ready for Duty!");
+  Serial.println("System starts automatically when powered ON ");
+
+  // ⭐⭐⭐ Added 2-second delay before car moves ⭐⭐⭐
+  Serial.println("Starting car movement in 3 seconds...");
+  delay(3000);
+}
+
+// ==== Ultrasonic Distance Function ====
+int getDistance() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  duration = pulseIn(ECHO, HIGH, 30000);
+  int dist = duration * 0.034 / 2;
+  Serial.print("Dist: ");
+  Serial.println(dist);
+  return dist;
+}
+
+// ==== Fire Detection ====
+bool isFireDetected() {
+  int left = digitalRead(FLAME_LEFT);
+  int mid = digitalRead(FLAME_MID);
+  int right = digitalRead(FLAME_RIGHT);
+  
+  return (left == LOW || mid == LOW || right == LOW);
+}
+
+// ==== Servo Aim Towards Fire ====
+void aimAtFire() {
+  int left = digitalRead(FLAME_LEFT);
+  int mid = digitalRead(FLAME_MID);
+  int right = digitalRead(FLAME_RIGHT);
+
+  if (left == LOW) {
+    Serial.println(" Fire on LEFT → Aiming left");
+    servoMotor.write(170);
+  }
+  else if (right == LOW) {
+    Serial.println(" Fire on RIGHT → Aiming right");
+    servoMotor.write(10);
+  }
+  else {
+    Serial.println(" Fire in FRONT → Aiming center");
+    servoMotor.write(90);
+  }
+}
+
+// ==== Obstacle Avoidance ====
+void avoidObstacle() {
+  int dist = getDistance();
+
+  if (dist > 0 && dist < 30) { 
+    stopCar();
+    Serial.println("⚠ Obstacle in front!");
+
+    // Check left
+    servoMotor.write(170);
+    delay(500);
+    int leftDist = getDistance();
+
+    if (leftDist > 20) {
+      Serial.println("✅ Path clear on left → Turning left");
+      turnLeft();
+      delay(600);
+      forward();
+      return;
+    }
+
+    // Check right
+    servoMotor.write(10);
+    delay(500);
+    int rightDist = getDistance();
+
+    if (rightDist > 20) {
+      Serial.println("✅ Path clear on right → Turning right");
+      turnRight();
+      delay(600);
+      forward();
+      return;
+    }
+
+    // All blocked → back up and retry
+    Serial.println("🚧 All sides blocked! Backing up...");
+    backward();
+    delay(700);
+    stopCar();
+
+    while (true) {
+      servoMotor.write(170); 
+      delay(400);
+      int newDist = getDistance();
+      if (newDist > 20) {
+        Serial.println("✅ Free path left → Moving forward");
+        turnLeft();
+        delay(600);
+        forward();
+        break;
+      }
+
+      servoMotor.write(10);
+      delay(400);
+      newDist = getDistance();
+      if (newDist > 20) {
+        Serial.println("✅ Free path right → Moving forward");
+        turnRight();
+        delay(600);
+        forward();
+        break;
+      }
+
+      Serial.println("❌ Still blocked... backing again");
+      backward();
+      delay(600);
+      stopCar();
+    }
+  }
+}
+
+// ==== Main Loop ====
+void loop() {
+  if (isFireDetected()) {
+    stopCar();
+    Serial.println("🔥 Fire Detected! Stopping and spraying water...");
+    aimAtFire();
+
+    digitalWrite(PUMP_PIN, HIGH);
+    delay(3000);
+    digitalWrite(PUMP_PIN, LOW);
+
+    servoMotor.write(90);
+    delay(1000);
+  } 
+  else {
+    avoidObstacle();
+    forward();
+    servoMotor.write(90);
+  }
+
+  delay(100);
+}
+
+// ==== Motor Control ====
+void forward() {
+  Serial.println("Move Forward");
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 140);
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+}
+
+void backward() {
+  Serial.println("Move Backward");
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 140);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+void turnLeft() {
+  Serial.println("TurnLeft");
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 140);
+}
+
+void turnRight() {
+  Serial.println("TurnRight");
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 140);
+}
+
+void stopCar() {
+  Serial.println("Stop Car");
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
