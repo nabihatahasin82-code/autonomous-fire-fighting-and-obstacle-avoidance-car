@@ -1,13 +1,8 @@
-### Project Images
+d![Project](Autonomous-Fire-Fighting-Car/images/project1.jpg)
+![Project](Autonomous-Fire-Fighting-Car/images/project2.jpg)
 
-#### Project
-![Project](images/project1.jpg)
-![Project](images/project2.jpg)
+![Team](Autonomous-Fire-Fighting-Car/images/team1.jpg)
+![Team](Autonomous-Fire-Fighting-Car/images/team2.jpg)
+![Team](Autonomous-Fire-Fighting-Car/images/team3.jpg)
 
-#### Team
-![Team](images/team1.jpg)
-![Team](images/team2.jpg)
-![Team](images/team3.jpg)
-
-#### Poster
-![Poster](images/poster.jpg)
+![Poster](Autonomous-Fire-Fighting-Car/images/poster.jpg)
