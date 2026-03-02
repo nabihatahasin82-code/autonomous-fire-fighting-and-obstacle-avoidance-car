@@ -1,6 +1,4 @@
-d### Project Images
-
-#### Project
+d#### Project
 ![Project](Autonomous-Fire-Fighting-Car/images/project1.jpg)
 ![Project](Autonomous-Fire-Fighting-Car/images/project2.jpg)
 
