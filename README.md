@@ -1,10 +1,10 @@
-## Project Images
+### Project Images
 
-### Project
-![Project](images/your-image-name1.jpeg)
+#### Project
+![Project](images/project.jpg)
 
-### Team
-![Team](images/your-image-name2.jpeg)
+#### Team
+![Team](images/team.jpg)
 
-### Poster
-![Poster](images/your-image-name3.jpeg)
+#### Poster
+![Poster](images/poster.jpg)
