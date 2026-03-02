@@ -8,4 +8,4 @@ d#### Project
 ![Team](Autonomous-Fire-Fighting-Car/images/team3.jpg)
 
 #### Poster
-![Poster](Autonomous-Fire-Fighting-Car/images/poster.jpg)
+![Poster](Autonomous-Fire-Fighting-Car/images/poster.jpg) 
